@@ -1,0 +1,77 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f172a" />
+<title>Premium Utility Suite</title>
+<link rel="manifest" href="manifest.json" />
+<script src="https://cdn.jsdelivr.net/npm/otpauth/dist/otpauth.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:linear-gradient(135deg,#0f172a,#111827,#1e293b);color:#fff;min-height:100vh;padding:16px;display:flex;justify-content:center}
+.main{width:100%;max-width:430px;display:flex;flex-direction:column;gap:18px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:24px;padding:22px;backdrop-filter:blur(12px);box-shadow:0 20px 50px rgba(0,0,0,.35)}
+h1,h2{text-align:center;margin-bottom:18px} h1{font-size:28px} h2{font-size:24px}
+label{display:block;margin-bottom:8px;font-size:14px;opacity:.9}
+textarea,select{width:100%;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:#fff;font-size:15px;outline:none;margin-bottom:14px}
+textarea{min-height:120px;resize:vertical}
+.btn{width:100%;padding:14px;border:none;border-radius:14px;background:linear-gradient(90deg,#2563eb,#06b6d4);color:#fff;font-size:16px;font-weight:bold;cursor:pointer}
+.result-box,.code,.fixed-pass{margin-top:14px;padding:18px;border-radius:16px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:bold;word-break:break-word;cursor:pointer}
+.code{font-size:40px;color:#22c55e;letter-spacing:4px}
+.result-box,.fixed-pass{font-size:22px;min-height:70px}
+.small,.timer,.footer,.copied,.error{text-align:center;font-size:13px;margin-top:8px}
+.copied{opacity:0;transition:.3s}.copied.show{opacity:1}
+.error{color:#ef4444}.footer{color:#94a3b8}
+</style>
+</head>
+<body>
+<div class="main"><div class="card">
+<h2>2FA Generator</h2>
+<textarea id="secret" placeholder="Paste your 2FA Secret Key"></textarea>
+<div class="error" id="error"></div>
+<div class="code" id="code">------</div>
+<div class="timer" id="timer">Waiting...</div>
+<div class="copied" id="codeCopied">Code Copied</div>
+<div class="footer">Google Authenticator / Authy Compatible</div>
+<div class="footer">© All Rights Reserved by 𝙰𝚈𝙰𝙽</div>
+</div><div class="card">
+<button class="btn" onclick="generateName()">Switch Names</button>
+<div class="result-box" id="nameResult" onclick="copyText('nameResult','nameCopied')">.....</div>
+<div class="copied" id="nameCopied">Copied</div>
+</div><div class="card">
+<div class="small">Tap password to copy</div>
+<div class="fixed-pass" id="fixedPassword" onclick="copyText('fixedPassword','passCopied')">qq123123</div>
+<div class="copied" id="passCopied">Copied</div>
+</div></div><script>
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}
+
+let totp, interval;
+const secretInput=document.getElementById('secret');
+const codeEl=document.getElementById('code');
+const timerEl=document.getElementById('timer');
+const errorEl=document.getElementById('error');
+const codeCopied=document.getElementById('codeCopied');
+
+secretInput.addEventListener('click',function(){this.select();});
+secretInput.addEventListener('input',function(){
+ const secret=this.value.trim().replace(/\s+/g,'').toUpperCase();
+ if(!secret){codeEl.innerText='------';timerEl.innerText='Waiting...';errorEl.innerText='';clearInterval(interval);return;}
+ try{
+  totp=new OTPAuth.TOTP({issuer:'Custom',label:'2FA',algorithm:'SHA1',digits:6,period:30,secret:OTPAuth.Secret.fromBase32(secret)});
+  errorEl.innerText='';
+  updateCode();
+  clearInterval(interval);
+  interval=setInterval(updateCode,1000);
+ }catch(e){
+  clearInterval(interval);
+  codeEl.innerText='------';timerEl.innerText='Waiting...';errorEl.innerText='Invalid Secret Key';
+ }
+});
+function updateCode(){if(!totp) return; codeEl.innerText=totp.generate(); const remaining=30-Math.floor(Date.now()/1000)%30; timerEl.innerText='Refreshes in '+remaining+'s';}
+codeEl.addEventListener('click',async function(){ if(codeEl.innerText==='------') return; await navigator.clipboard.writeText(codeEl.innerText); codeCopied.classList.add('show'); setTimeout(()=>codeCopied.classList.remove('show'),1500);});
+
+const names=["Daniela Oliveira","Eliane Dias","Carolina Barros","Carla Pereira","Jéssica Peixoto","Daniela Guedes","Helena Ramos","Thaís Correia","Thaís Macedo","Bruna Souza","Bruna Fernandes","Andressa Teixeira","Renata Lima","Larissa Mendes","Beatriz Barbosa","Nicole Coelho","Vanessa Barbosa","Yasmin Antunes","Eduarda Rocha","Yasmin Santos","Beatriz Oliveira","Monique Monteiro","Ana Borges","Camila Coelho","Vanessa Oliveira","Paula Souza","Letícia Ribeiro","Yasmin Torres","Eduarda Lopes","Milena Freitas","Camila Dias","Marcela Barros","Raquel Teixeira","Camila Tavares","Cristiane Moreira","Amanda Castro","Raquel Barbosa","Vitória Rodrigues","Camila Alves","Clara Moreira","Thaís Araújo","Elisa Silva","Lívia Pinto","Jéssica Araújo","Patrícia Cardoso","Beatriz Cunha","Eliane Silva","Camila Peixoto","Daniela Cunha","Priscila Silva","Sheila Araújo","Helena Neves","Nicole Antunes","Clara Moura","Isabela Pacheco","Letícia Mendes","Marcela Vieira","Marcela Silva","Elisa Pereira","Fernanda Silva","Eduarda Moura","Clara Azevedo","Ana Almeida","Larissa Neves","Milena Correia","Aline Souza","Eduarda Rodrigues","Cristiane Torres","Paula Monteiro","Tatiana Barros","Bruna Batista","Clara Barros","Isabela Souza","Vanessa Mendes","Bianca Carvalho","Ana Moreira","Isabela Barros","Kelly Mendes","Rafaela Lima","Eliane Rocha","Marcela Gomes","Ana Barros","Ana Carvalho","Lívia Araújo","Monique Pinto","Juliana Costa","Vitória Carvalho","Paula Neves","Elisa Costa","Luana Peixoto","Marcela Oliveira","Vitória Barbosa","Larissa Almeida","Clara Duarte","Brenda Costa","Sabrina Correia","Kelly Azevedo","Débora Ribeiro","Júlia Borges","Sheila Antunes"];
+function generateName(){document.getElementById('nameResult').innerText=names[(Math.random()*names.length)|0];}
+function copyText(targetId,messageId){const text=document.getElementById(targetId).innerText; if(text==='Click Generate') return; navigator.clipboard.writeText(text); const msg=document.getElementById(messageId); msg.classList.add('show'); setTimeout(()=>msg.classList.remove('show'),1500);}
+</script></body>
+</html>
